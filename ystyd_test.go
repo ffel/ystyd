@@ -18,14 +18,14 @@ var yaml string = `site:
   menu: Contact
   out: contact.html
 nav:
-  menu: <ul class="nav nav-pills pull-right">{{.menu}}</ul>
+  menu: <m>{{.menu}}</m>
   active: <li class="active"><a href="{{.href}}">{{.label}}</a></li>
   inactive: <li><a href="{{.href}}">{{.label}}</a></li>
 `
 
-func TestData(t *testing.T) {
+func TestUnmarshal(t *testing.T) {
 
-	d := Data{}
+	d := Site{}
 	err := goyaml.Unmarshal([]byte(yaml), &d)
 	if err != nil {
 		panic(err)
@@ -38,7 +38,33 @@ func TestData(t *testing.T) {
 	}
 
 	read = fmt.Sprintf("%v", d.Menu)
-	exp = "{<ul class=\"nav nav-pills pull-right\">{{.menu}}</ul> <li class=\"active\"><a href=\"{{.href}}\">{{.label}}</a></li> <li><a href=\"{{.href}}\">{{.label}}</a></li>}"
+	exp = "{<m>{{.menu}}</m> <li class=\"active\"><a href=\"{{.href}}\">{{.label}}</a></li> <li><a href=\"{{.href}}\">{{.label}}</a></li>}"
+	if read != exp {
+		t.Errorf("error:, %q != %q", read, exp)
+	}
+}
+
+func TestRead(t *testing.T) {
+	d := NewSite()
+
+	err := d.Read(yaml)
+
+	if err != nil {
+		t.Errorf("error: non nill error %v", err)
+	}
+}
+
+func TestCreate(t *testing.T) {
+	d := NewSite()
+	err := d.Read(yaml)
+
+	if err != nil {
+		t.Errorf("error: non nill error %v", err)
+	}
+
+	read := fmt.Sprintf("%v", d.Create("index.html"))
+	exp := "boo"
+
 	if read != exp {
 		t.Errorf("error:, %q != %q", read, exp)
 	}
