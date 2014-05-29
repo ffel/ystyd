@@ -53,7 +53,14 @@ func (d *Site) Create(file string) string {
 	for _, page := range d.Pages {
 		t := template.New("menuentry")
 
-		t, err := t.Parse(d.Menu.Inactive)
+		var err error
+
+		if file == page.Out {
+			t, err = t.Parse(d.Menu.Active)
+		} else {
+			t, err = t.Parse(d.Menu.Inactive)
+
+		}
 
 		if err != nil {
 			log.Fatal(err)
@@ -73,5 +80,22 @@ func (d *Site) Create(file string) string {
 	}
 
 	// wrap the contents in Menu
-	return b.String()
+	var buff bytes.Buffer
+
+	m := template.New("menu")
+	m, err := m.Parse(d.Menu.Menu)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = m.Execute(&buff, struct {
+		Menu string
+	}{b.String()})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return buff.String()
 }
