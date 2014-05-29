@@ -1,10 +1,11 @@
+// Package Ystyd provides means to complement pandoc in
+// generating static web sites
 package ystyd
 
 import (
 	"bytes"
 	"text/template"
 
-	"log"
 	"launchpad.net/goyaml"
 )
 
@@ -45,7 +46,7 @@ func (d *Site) Read(data string) error {
 }
 
 // Create creates the html menu for file
-func (d *Site) Create(file string) string {
+func (d *Site) create(file string) (string, error) {
 	// template.Execute expects a writes, we use a buffer here
 	var b bytes.Buffer
 
@@ -63,7 +64,7 @@ func (d *Site) Create(file string) string {
 		}
 
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
 
 		err = t.Execute(&b, struct {
@@ -72,7 +73,7 @@ func (d *Site) Create(file string) string {
 		}{page.Out, page.Menu})
 
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
 
 		// according to the docs, err is always nil, so we ignore it
@@ -86,7 +87,7 @@ func (d *Site) Create(file string) string {
 	m, err := m.Parse(d.Menu.Menu)
 
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	err = m.Execute(&buff, struct {
@@ -94,8 +95,14 @@ func (d *Site) Create(file string) string {
 	}{b.String()})
 
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	return buff.String()
+	return buff.String(), nil
+}
+
+// PostProcess adds menu to file fname with contents f
+func (d *Site) PostProcess(fname string, f string) (string, error) {
+
+	return "", nil
 }

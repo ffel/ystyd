@@ -62,14 +62,55 @@ func TestCreate(t *testing.T) {
 		t.Errorf("error: non nill error %v", err)
 	}
 
-	read := fmt.Sprintf("%v", d.Create("index.html"))
+	got, err := d.create("index.html")
 	exp := `<m><li class="active"><a href="index.html">Home</a></li>
 <li><a href="about.html">About</a></li>
 <li><a href="contact.html">Contact</a></li>
 </m>`
 
+	if err != nil {
+		t.Errorf("error: non nill error %v", err)
+	}
+
 	// with %s instead of %q you get rid of the escaped quotes
-	if read != exp {
-		t.Errorf("error:\n%s\n\t!=\n%s", read, exp)
+	if got != exp {
+		t.Errorf("error:\n%s\n\t!=\n%s", got, exp)
+	}
+}
+
+func TestCreate_noRead(t *testing.T) {
+	d := NewSite()
+
+	// forgot to Read
+
+	got, err := d.create("index.html")
+	exp := ""
+
+	if err != nil {
+		t.Errorf("error: non nill error %v", err)
+	}
+
+	if got != exp {
+		t.Errorf("error:\n%s\n\t!=\n%s", got, exp)
+	}
+}
+
+func TestPostProcess(t *testing.T) {
+	d := NewSite()
+	err := d.Read(yaml)
+
+	if err != nil {
+		t.Errorf("error: non nill error %v", err)
+	}
+
+	got, err := d.PostProcess("index.html", "<site>\n{{.Nav}}\n</site>")
+	exp := "boo"
+
+	if err != nil {
+		t.Errorf("error: non nill error %v", err)
+	}
+
+	if got != exp {
+		t.Errorf("error:\n%s\n\t!=\n%s", got, exp)
 	}
 }
