@@ -19,8 +19,8 @@ var yaml string = `site:
   out: contact.html
 nav:
   menu: <m>{{.menu}}</m>
-  active: <li class="active"><a href="{{.href}}">{{.label}}</a></li>
-  inactive: <li><a href="{{.href}}">{{.label}}</a></li>
+  active: <li class="active"><a href="{{.Href}}">{{.Label}}</a></li>
+  inactive: <li><a href="{{.Href}}">{{.Label}}</a></li>
 `
 
 func TestUnmarshal(t *testing.T) {
@@ -38,7 +38,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	read = fmt.Sprintf("%v", d.Menu)
-	exp = "{<m>{{.menu}}</m> <li class=\"active\"><a href=\"{{.href}}\">{{.label}}</a></li> <li><a href=\"{{.href}}\">{{.label}}</a></li>}"
+	exp = "{<m>{{.menu}}</m> <li class=\"active\"><a href=\"{{.Href}}\">{{.Label}}</a></li> <li><a href=\"{{.Href}}\">{{.Label}}</a></li>}"
 	if read != exp {
 		t.Errorf("error:, %q != %q", read, exp)
 	}
@@ -63,9 +63,13 @@ func TestCreate(t *testing.T) {
 	}
 
 	read := fmt.Sprintf("%v", d.Create("index.html"))
-	exp := "boo"
+	exp := `<li><a href="index.html">Home</a></li>
+<li><a href="about.html">About</a></li>
+<li><a href="contact.html">Contact</a></li>
+`
 
+	// with %s instead of %q you get rid of the escaped quotes
 	if read != exp {
-		t.Errorf("error:, %q != %q", read, exp)
+		t.Errorf("error:\n%s\n\t!=\n%s", read, exp)
 	}
 }

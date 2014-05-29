@@ -1,6 +1,12 @@
 package ystyd
 
-import "launchpad.net/goyaml"
+import (
+	"bytes"
+	"text/template"
+
+	"log"
+	"launchpad.net/goyaml"
+)
 
 // struct Page contains In: input md file name, Menu: header in Site Menu
 // Out: site html file name
@@ -26,7 +32,7 @@ type Site struct {
 
 // NewSite creates an empty site structure reference
 func NewSite() *Site {
-	return new(Site)
+	return &Site{}
 }
 
 // Read read yaml site data
@@ -40,5 +46,32 @@ func (d *Site) Read(data string) error {
 
 // Create creates the html menu for file
 func (d *Site) Create(file string) string {
-	return d.Menu.Menu
+	// template.Execute expects a writes, we use a buffer here
+	var b bytes.Buffer
+
+	// create the contents
+	for _, page := range d.Pages {
+		t := template.New("menuentry")
+
+		t, err := t.Parse(d.Menu.Inactive)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = t.Execute(&b, struct {
+			Href  string
+			Label string
+		}{page.Out, page.Menu})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// according to the docs, err is always nil, so we ignore it
+		b.WriteString("\n")
+	}
+
+	// wrap the contents in Menu
+	return b.String()
 }
