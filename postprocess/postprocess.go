@@ -2,7 +2,7 @@
 // generating static web sites
 //
 // Ystyd assumes all data used is safe as it uses text/template
-package ystyd
+package postprocess
 
 import (
 	"bytes"
