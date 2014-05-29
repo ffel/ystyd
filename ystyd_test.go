@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"log"
 	"launchpad.net/goyaml"
 )
 
@@ -18,10 +19,35 @@ var yaml string = `site:
   menu: Contact
   out: contact.html
 nav:
-  menu: <m>{{.Menu}}</m>
+  menu: <nav>{{.Menu}}</nav>
   active: <li class="active"><a href="{{.Href}}">{{.Label}}</a></li>
   inactive: <li><a href="{{.Href}}">{{.Label}}</a></li>
 `
+
+func ExamplePostProcess() {
+	d := NewSite()
+	err := d.Read(yaml)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	page, err := d.PostProcess("index.html", "<site>\n{{.Nav}}\n</site>")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(page)
+
+	// Output:
+	// <site>
+	// <nav><li class="active"><a href="index.html">Home</a></li>
+	// <li><a href="about.html">About</a></li>
+	// <li><a href="contact.html">Contact</a></li>
+	// </nav>
+	// </site>
+}
 
 func TestUnmarshal(t *testing.T) {
 
@@ -38,7 +64,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	read = fmt.Sprintf("%v", d.Menu)
-	exp = "{<m>{{.Menu}}</m> <li class=\"active\"><a href=\"{{.Href}}\">{{.Label}}</a></li> <li><a href=\"{{.Href}}\">{{.Label}}</a></li>}"
+	exp = "{<nav>{{.Menu}}</nav> <li class=\"active\"><a href=\"{{.Href}}\">{{.Label}}</a></li> <li><a href=\"{{.Href}}\">{{.Label}}</a></li>}"
 	if read != exp {
 		t.Errorf("error:, %q != %q", read, exp)
 	}
@@ -63,10 +89,10 @@ func TestCreate(t *testing.T) {
 	}
 
 	got, err := d.create("index.html")
-	exp := `<m><li class="active"><a href="index.html">Home</a></li>
+	exp := `<nav><li class="active"><a href="index.html">Home</a></li>
 <li><a href="about.html">About</a></li>
 <li><a href="contact.html">Contact</a></li>
-</m>`
+</nav>`
 
 	if err != nil {
 		t.Errorf("error: non nill error %v", err)
@@ -85,26 +111,6 @@ func TestCreate_noRead(t *testing.T) {
 
 	got, err := d.create("index.html")
 	exp := ""
-
-	if err != nil {
-		t.Errorf("error: non nill error %v", err)
-	}
-
-	if got != exp {
-		t.Errorf("error:\n%s\n\t!=\n%s", got, exp)
-	}
-}
-
-func TestPostProcess(t *testing.T) {
-	d := NewSite()
-	err := d.Read(yaml)
-
-	if err != nil {
-		t.Errorf("error: non nill error %v", err)
-	}
-
-	got, err := d.PostProcess("index.html", "<site>\n{{.Nav}}\n</site>")
-	exp := "boo"
 
 	if err != nil {
 		t.Errorf("error: non nill error %v", err)

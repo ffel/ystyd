@@ -1,5 +1,7 @@
 // Package Ystyd provides means to complement pandoc in
 // generating static web sites
+//
+// Ystyd assumes all data used is safe as it uses text/template
 package ystyd
 
 import (
@@ -45,8 +47,8 @@ func (d *Site) Read(data string) error {
 	return nil
 }
 
-// Create creates the html menu for file
-func (d *Site) create(file string) (string, error) {
+// Create creates the html menu for fname
+func (d *Site) create(fname string) (string, error) {
 	// template.Execute expects a writes, we use a buffer here
 	var b bytes.Buffer
 
@@ -56,7 +58,7 @@ func (d *Site) create(file string) (string, error) {
 
 		var err error
 
-		if file == page.Out {
+		if fname == page.Out {
 			t, err = t.Parse(d.Menu.Active)
 		} else {
 			t, err = t.Parse(d.Menu.Inactive)
@@ -101,8 +103,30 @@ func (d *Site) create(file string) (string, error) {
 	return buff.String(), nil
 }
 
-// PostProcess adds menu to file fname with contents f
-func (d *Site) PostProcess(fname string, f string) (string, error) {
+// PostProcess adds menu to file fname with contents page
+func (d *Site) PostProcess(fname string, page string) (string, error) {
+	nav, err := d.create(fname)
 
-	return "", nil
+	if err != nil {
+		return "", err
+	}
+
+	var buff bytes.Buffer
+
+	p := template.New("page")
+	p, err = p.Parse(page)
+
+	if err != nil {
+		return "", err
+	}
+
+	err = p.Execute(&buff, struct {
+		Nav string
+	}{nav})
+
+	if err != nil {
+		return "", err
+	}
+
+	return buff.String(), nil
 }
